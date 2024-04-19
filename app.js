@@ -1,7 +1,7 @@
 const express = require("express")
 const app = express()
-const {router} = require ("./routes/rts")
 const cors = require('cors')
+const {router} = require ("./routes/rts")
 const bodyParser = require('body-parser')
 //const bcrypt = require('bcryptjs')
 
