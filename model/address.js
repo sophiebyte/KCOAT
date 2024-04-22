@@ -1,8 +1,8 @@
 const Sequelize = require('sequelize');
 const { sequelize } = require("../config/connection.js");
-const {User} = require('./signup.js');
+const {User} = require('../model/signup')
 
-const customer = sequelize.define('Customer', {
+const Address = sequelize.define('address', {
     id: {
         allowNull: false,
         autoIncrement: true,
@@ -25,6 +25,14 @@ const customer = sequelize.define('Customer', {
             len: [1, 255]
         }
     },
+    phone: {
+        type: Sequelize.STRING,
+        allowNull: false
+    },
+    additionalPhone: {
+        type: Sequelize.STRING,
+        allowNull: true
+    },
     email: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -34,21 +42,30 @@ const customer = sequelize.define('Customer', {
             isEmail: true // Validate email format
         }
     },
-    gender: {
+    deliveryAddress: {
         type: Sequelize.STRING,
         allowNull: false,
         validate: {
             notEmpty: true,
-            isIn: [['male', 'female']] // Example: Limit gender to specific values
         }
     },
-    dateOfBirth: {
+    additionalInformation: {
         type: Sequelize.STRING,
-        allowNull: true
+        allowNull: true,
     },
-    phone: {
+    state: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+        }
+    },
+    city: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        validate: {
+            notEmpty: true,
+        }
     },
     userId: {
         type:Sequelize.UUID,
@@ -59,16 +76,15 @@ const customer = sequelize.define('Customer', {
         }
     }
 });
-
-customer.associate = function(models) {
+Address.associate = function(models) {
     // Associate Customer with User model
-    customer.belongsTo(models.User, { foreignKey: 'userId' });
+    Address.belongsTo(models.User, { foreignKey: 'userId' });
 };
 
-customer.sync().then((rs) => {
+Address.sync().then((rs) => {
     console.log(rs)
 }).catch((err) => {
     console.log(err)
 })
 
-module.exports = { customer }
+module.exports = { Address };

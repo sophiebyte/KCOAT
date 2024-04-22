@@ -1,5 +1,7 @@
 const JWT = require('jsonwebtoken')
 const { User } = require('../model/signup')
+const {customer} = require('../model/customer')
+const {Address} = require('../model/address')
 const bcrypt = require('bcrypt');
 const bcSaltRounds = 10
 const secret = "KCOAT";
@@ -27,11 +29,10 @@ module.exports = {
                     email: customer.email,
                     password: hashedPassword
                 })
-
             })
-
             .then(rs => {
                 if (rs) {
+                    console.log('Signup successful')
                     return res.status(200).json({rs, msg: "New registration added." });
                 } else {
                     res.status(500).json({ success: false });
@@ -42,6 +43,74 @@ module.exports = {
                 res.status(500).json({ error: 'Internal server error' });
             })
     },
+    async addDetails(req, res) {
+        const details = {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            email: req.body.email,
+            gender: req.body.gender,
+            dateOfBirth: req.body.dateOfBirth,
+            phone: req.body.phone,
+            userId: null // Changed to userId
+        };
+    
+        try {
+            const user = await User.findOne({ where: { email: details.email }, paranoid: false });
+    
+            if (user) {
+                // If user found, set the userId in the details object
+                details.userId = user.id;
+    
+                // Create a new customer record with associated userId
+                const result = await customer.create(details);
+    
+                console.log('Personal details added successfully');
+                return res.status(200).json({ result, msg: "Details added." });
+            } else {
+                // Handle case where user is not found
+                throw new Error('User not found');
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+    async addAddress(req, res) {
+        const details = {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            phone: req.body.phone,
+            additionalPhone: req.body.additionalPhone,
+            email: req.body.email,
+            deliveryAddress: req.body.deliveryAddress,
+            additionalInformation: req.body.additionalInformation,
+            state: req.body.state,
+            city: req.body.city,
+            userId: null 
+        };
+    
+        try {
+            const user = await User.findOne({ where: { email: details.email }, paranoid: false });
+    
+            if (user) {
+                // If user found, set the userId in the details object
+                details.userId = user.id;
+    
+                // Create a new customer record with associated userId
+                const result = await Address.create(details);
+    
+                console.log('Address added successfully');
+                return res.status(200).json({ result, msg: "Address added." });
+            } else {
+                // Handle case where user is not found
+                throw new Error('User not found');
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+    
 
     async login(req, res) {
         try {
@@ -55,14 +124,15 @@ module.exports = {
             //console.log({message:user})
             // Check if user exists
             if (!user) {
-                return res.status(401).json({ success: false, error: 'Invalid email or password2' });
+                console.log('incorrect email or password')
+                return res.status(401).json({ success: false, error: 'Invalid email or password' });
             }
-            console.log('Database Password:', user.password);
+            //console.log('Database Password:', user.password);
             // Compare passwords
            const passwordMatch = bcrypt.compareSync(customer.password, user.password);
-           console.log('Password Match:', passwordMatch);
+           /*console.log('Password Match:', passwordMatch);
            console.log(customer.password)
-           console.log(user.password)
+           console.log(user.password)*/
 
             // If passwords match, generate JWT token
             if (passwordMatch) {
@@ -85,16 +155,11 @@ module.exports = {
                 password: req.body.password,
                 email: req.body.email
             };
-    
             console.log("Requested email:", customer.email);
-    
             const user = await User.findOne({ where: { email: customer.email } });
-    
-    
             if (user) {
                 var hash = bcrypt.hashSync(customer.password, bcSaltRounds);
-                
-    
+
                 await User.update({ password: hash }, { where: { email: customer.email } });
     
                 return res.status(200).json({ success:  "password changed successfully"});
@@ -152,8 +217,6 @@ module.exports = {
         }
         
     },
-        
-
     
 
      //find a user
