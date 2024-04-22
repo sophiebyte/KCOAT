@@ -59,11 +59,12 @@ module.exports = {
     
             if (user) {
                 // If user found, set the userId in the details object
+                console.log(user)
                 details.userId = user.id;
     
                 // Create a new customer record with associated userId
                 const result = await customer.create(details);
-    
+    console.log(result)
                 console.log('Personal details added successfully');
                 return res.status(200).json({ result, msg: "Details added." });
             } else {
